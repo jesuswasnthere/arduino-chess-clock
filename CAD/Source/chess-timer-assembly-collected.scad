@@ -1,132 +1,171 @@
 $fn = 60;
 
+// ==========================================
+// VARIABLES DE TAMAÑO Y TOLERANCIA
+// ==========================================
+W = 140;  // Ancho total del reloj 
+D = 110;  // Profundidad total 
+H = 65;   // Alto total 
+CW = W / 2; // Centro exacto del ancho 
+
+tolerancia_tapa = 0.8; // Tolerancia para que la tapa encaje
+
+// --- GROSOR Y ESP32-S2 MINI ---
+grosor_tapa = 6;       
+esp32_ancho = 25.4;    
+esp32_largo = 34.3;    
+esp32_prof = 3;        
+
+// Medidas exactas de tus componentes
+pantalla_ancho = 96;
+pantalla_alto = 41;
+corneta_diam = 47; 
+
+boton_cuadrado = 6; 
+
+// Medidas del panel trasero
+usb_ancho = 10;  
+usb_alto = 6;
+suiche_ancho = 11; 
+suiche_alto = 6;
+
+// Soportes de la pantalla
+pantalla_tornillos_ancho = 93; 
+pantalla_tornillos_alto = 55;  
+
+// ==========================================
+// --- CUNA DEL BOTÓN (SNAP-FIT) ---
+// ==========================================
+altura_torres = 46;      
+boton_ancho = 11.4;      
+boton_base_alto = 3.5;   
+recorrido_boton = 1.5;   
+
+// ==========================================
+
 // Hull
 module backTopSides(){
     union() {
         difference(){
             difference() {
-                cube([105, 90, 40]);
+                cube([W, D, H]);
                 translate([-5,0,0])
                 rotate(a=53.13010235, v=[1,0,0])
-                cube([115, 90, 40]);
+                cube([W+10, D*1.5, H*1.5]); 
             }
             
             translate([3,0,-3])
             difference(){
-                cube([99, 87, 40]);
+                cube([W-6, D-3, H]);
                 translate([-5,0,0])
                 rotate(a=53.13010235, v=[1,0,0])
-                cube([109, 87, 40]);
+                cube([W+10, D*1.5, H*1.5]);
             }
             
-            translate([9, 39, 35])
+            // Hueco del balancín
+            translate([(W-87)/2, D-51, H-5])
             cube([87, 42, 10]);
             
+            // Bisel delantero 
             translate([5, 4, 0])
             rotate(a=53.13010235, v=[1,0,0])
-            cube([95, 45, 5]);
+            cube([W-10, 80, 5]);
+            
+            // Hueco para la corneta 
+            translate([-5, D-35, (H/2) + 2]) 
+            rotate(a=90, v=[0,1,0]) 
+            cylinder(h=15, d=corneta_diam, $fn=99);
+            
+            // Huecos Traseros
+            translate([W/4, D - 5, 12]) 
+            cube([usb_ancho, 10, usb_alto]);
+            
+            translate([(3*W/4) - suiche_ancho, D - 5, 12]) 
+            cube([suiche_ancho, 10, suiche_alto]);
         }
-        translate([47.5,81,35])
-        cube([10, 6, 5]);
-
-        translate([52.5,81,35])
-        rotate(a=-90, v=[1,0,0])
-        cylinder(6, 5, 5, $fn=99);
-
-        translate([47.5,30,35])
-        cube([10, 9, 5]);
-
-        translate([52.5,30,35])
-        rotate(a=-90, v=[1,0,0])
-        cylinder(9, 5, 5, $fn=99);
+        
+        // Soportes del eje del balancín
+        translate([CW-5, D-9, H-5]) cube([10, 6, 5]);
+        translate([CW, D-9, H-5]) rotate(a=-90, v=[1,0,0]) cylinder(6, 5, 5, $fn=99);
+        translate([CW-5, D-60, H-5]) cube([10, 9, 5]);
+        translate([CW, D-60, H-5]) rotate(a=-90, v=[1,0,0]) cylinder(9, 5, 5, $fn=99);
     }
 }
+
 module hole(){
     difference(){
         cylinder(5, 2, 2, $fn=99);
-        translate([0,0,-1.5])
-        cylinder(5, 1, 1, $fn=99);
+        translate([0,0,-1.5]) cylinder(5, 1, 1, $fn=99);
     }
 }
+
 module front(){
+    FRONT_L = 80; 
     union() {
         difference(){
-            cube([105, 48, 3]);
-            translate([31, 9, -1])
-            cylinder(5, 2.25, 2.25, $fn=99);
+            cube([W, FRONT_L, 3]);
+            
+            // 3 Huecos para botones cuadrados 
+            for (i = [-1 : 1 : 1]) {
+                translate([CW + (i * 20) - (boton_cuadrado/2), 12 - (boton_cuadrado/2), -1])
+                cube([boton_cuadrado, boton_cuadrado, 5]);
+            }
                     
-            translate([52.5, 9, -1])
-            cylinder(5, 2.25, 2.25, $fn=99);
-                    
-            translate([74, 9, -1])
-            cylinder(5, 2.25, 2.25, $fn=99);
-                    
-            translate([16.5, 17, -1])
-            cube([72, 26 ,5]);
+            // Hueco de tu pantalla LCD
+            translate([CW - (pantalla_ancho/2), 24, -1]) cube([pantalla_ancho, pantalla_alto, 5]);
         }
-        translate([15, 45.5, -3.5])
-        hole();
-        translate([15, 14.5, -3.5])
-        hole();
-        translate([90, 45.5, -3.5])
-        hole();
-        translate([90, 14.5, -3.5])
-        hole();
-        translate([15, 9, -3.5])
-        hole();
-        translate([90, 9, -3.5])
-        hole();
+        
+        // Soportes de tornillos
+        translate([15, FRONT_L-2.5, -3.5]) hole();
+        translate([15, 14.5, -3.5]) hole();
+        translate([W-15, FRONT_L-2.5, -3.5]) hole();
+        translate([W-15, 14.5, -3.5]) hole();
+        translate([15, 9, -3.5]) hole();
+        translate([W-15, 9, -3.5]) hole();
+        
+        // 4 Soportes pantalla
+        pantalla_centro_y = 24 + (pantalla_alto / 2); 
+        
+        translate([CW - (pantalla_tornillos_ancho/2), pantalla_centro_y - (pantalla_tornillos_alto/2), -3.5]) hole();
+        translate([CW + (pantalla_tornillos_ancho/2), pantalla_centro_y - (pantalla_tornillos_alto/2), -3.5]) hole();
+        translate([CW - (pantalla_tornillos_ancho/2), pantalla_centro_y + (pantalla_tornillos_alto/2), -3.5]) hole();
+        translate([CW + (pantalla_tornillos_ancho/2), pantalla_centro_y + (pantalla_tornillos_alto/2), -3.5]) hole();
     }
 }
+
 module hull(){
     union() {
         difference(){
             backTopSides();
             
-            translate([50.5,80,35.5])
-            cube([4, 7, 5.5]);
-            
-            translate([52.5,80,35.5])
-            rotate(a=-90, v=[1,0,0])
-            cylinder(7, 2, 2, $fn=99);
-            
-            translate([50.5,33,35.5])
-            cube([4, 7, 5.5]);
-            
-            translate([52.5,33,36])
-            rotate(a=-90, v=[1,0,0])
-            cylinder(7, 2, 2, $fn=99);   
+            translate([CW-2, D-10, H-4.5]) cube([4, 7, 5.5]);
+            translate([CW, D-10, H-4.5]) rotate(a=-90, v=[1,0,0]) cylinder(7, 2, 2, $fn=99);
+            translate([CW-2, D-57, H-4.5]) cube([4, 7, 5.5]);
+            translate([CW, D-57, H-4]) rotate(a=-90, v=[1,0,0]) cylinder(7, 2, 2, $fn=99);   
         }
-        translate([6, 60, 33])
-        hole();
-        translate([99, 60, 33])
-        hole();
-        rotate(a=53.13010235, v=[1,0,0])
-        translate([0,2,-3])
-        front();
-    }
-}
-module switch(){
-    union() {
-        cube([42.5, 41, 6]);
-        translate([43, 0, 0])
-        rotate(a=-8, v=[0,1,0])
-        cube([42.5, 41, 6]);
-        translate([42.5, 46, 1.5])
-        rotate(a=90, v=[1,0,0])
-        cylinder(51, 1.5, 1.5, $fn=99);
+        translate([6, 60, H-7]) hole();
+        translate([W-6, 60, H-7]) hole();
+        
+        rotate(a=53.13010235, v=[1,0,0]) translate([0,2,-3]) front();
     }
 }
 
-// Bottom
+module switch(){
+    union() {
+        cube([42.5, 41, 6]);
+        translate([43, 0, 0]) rotate(a=-8, v=[0,1,0]) cube([42.5, 41, 6]);
+        translate([42.5, 46, 1.5]) rotate(a=90, v=[1,0,0]) cylinder(51, 1.5, 1.5, $fn=99);
+    }
+}
+
 module cut(){
     points = [ 
-    [3,87,3],
-    [102,87,3],
-    [3,87,6],
-    [102,87,6],
-    [3,84.75,6],
-    [102,84.75,6]];
+    [3, D-3, 3],
+    [W-3, D-3, 3],
+    [3, D-3, 3 + grosor_tapa],
+    [W-3, D-3, 3 + grosor_tapa],
+    [3, D-5.25, 3 + grosor_tapa],
+    [W-3, D-5.25, 3 + grosor_tapa]];
     faces = [
     [0,1,2],
     [2,1,3],
@@ -139,32 +178,51 @@ module cut(){
     polyhedron(points,faces);
 }
 
+// MÓDULO INTELIGENTE DE LA TORRE SNAP-FIT
+module torre_protegida(es_izq) {
+    h_torre = altura_torres - (grosor_tapa - 3); 
+    w_t = boton_ancho + 4; 
+    d_t = boton_ancho + 2; 
+
+    cube([w_t, d_t, h_torre]);
+
+    translate([0, 0, h_torre]) {
+        cube([2, d_t, boton_base_alto]);
+        translate([2, d_t/4, boton_base_alto]) cube([0.8, d_t/2, 1]);
+
+        translate([w_t - 2, 0, 0]) cube([2, d_t, boton_base_alto]);
+        translate([w_t - 2 - 0.8, d_t/4, boton_base_alto]) cube([0.8, d_t/2, 1]);
+
+        translate([0, d_t - 2, 0]) cube([w_t, 2, boton_base_alto]);
+    }
+
+    altura_muro = h_torre + boton_base_alto + recorrido_boton;
+    if (es_izq) {
+        translate([-2, 0, 0]) cube([2, d_t, altura_muro]);
+    } else {
+        translate([w_t, 0, 0]) cube([2, d_t, altura_muro]);
+    }
+}
+
 module bottom() {
     union() {
         difference(){
-            union(){
-                translate([3,3,0])
-                cube([105-6,90-6.25,3]);
-                translate([26-3,15-3,0])
-                cube([57,33,19+3]);
-            }
-            translate([26,15,0])
-            cube([51,27,19]);
-            translate([26+51-12,42+10,0])
-            cube([12,5,3]);
-            translate([26-3,15+2,3])
-            cube([3,27-4,19-3-2]);
-            translate([10,10,0])
-            cylinder(3,d=2,true);
-            translate([105-10,10,0])
-            cylinder(3,d=2,true);
-            translate([10,90-10,0])
-            cylinder(3,d=2,true);
-            translate([105-10,90-10,0])
-            cylinder(3,d=2,true);
-            translate([0, 0, -3])
-            cut();
+            translate([3 + (tolerancia_tapa/2), 3 + (tolerancia_tapa/2), 0]) 
+            cube([W - 6 - tolerancia_tapa, D - 6.25 - tolerancia_tapa, grosor_tapa]); 
+            
+            translate([CW - (esp32_ancho/2) - 0.5, 25, grosor_tapa - esp32_prof])
+            cube([esp32_ancho + 1, esp32_largo + 1, esp32_prof + 1]);
+            
+            translate([10,10,0]) cylinder(15,d=2,true);
+            translate([W-10,10,0]) cylinder(15,d=2,true);
+            translate([10,D-10,0]) cylinder(15,d=2,true);
+            translate([W-10,D-10,0]) cylinder(15,d=2,true);
+            
+            translate([0, 0, -3]) cut();
         }
+        
+        translate([CW - 38, D - 42, grosor_tapa]) torre_protegida(true);
+        translate([CW + 24, D - 42, grosor_tapa]) torre_protegida(false);
     }
 }
 
@@ -181,19 +239,27 @@ module foot(x,y){
 
 module bottomWithFeet() {
     union() {
-        translate([0,0,3])
-        bottom();
+        translate([0,0,3]) bottom();
         foot(10,10);
-        foot(105-10,10);
-        foot(10,90-10);
-        foot(105-10,90-10);
+        foot(W-10,10);
+        foot(10,D-10);
+        foot(W-10,D-10);
     }
 }
 
-translate([0, 0, 3])
+// ==========================================
+// --- ENSAMBLAJE VIRTUAL (MODO PREVISUALIZACIÓN) ---
+// ==========================================
+
+// 1. Carcasa principal (Color gris y 30% transparente)
+color("DarkGray", 0.3)
 hull();
-translate([10, 39, 37])
+
+// 2. Balancín (Color rojo, posicionado en su hueco)
+color("Red")
+translate([CW - 42.5, D-51, H-6.5])
 switch();
-translate([105, 90, 0])
-rotate([0, 0, 180])
+
+// 3. Base y Torres de protección (Color verde, encajadas)
+color("LimeGreen")
 bottomWithFeet();
